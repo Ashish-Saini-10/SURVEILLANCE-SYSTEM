@@ -1,0 +1,28 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Operational Databases (Biometric Encodings & Photos)
+encodings/
+data/
+last_seen/
+
+# Spreadsheet Log Output (Created dynamically on startup)
+attendance.xlsx
+
+# Environments
+.venv/
+venv/
+ENV/
+env/
+
+# IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local Deployment Utilities (Local-only, do not commit)
+run_portfolio.bat

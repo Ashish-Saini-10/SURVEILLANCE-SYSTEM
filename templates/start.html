@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🛡️ AI Surveillance & Attendance System</title>
+  
+  <!-- Premium Modern Typography -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-main: #090d16;
+      --bg-panel: #101625;
+      --accent-cyan: #06b6d4;
+      --accent-cyan-hover: #0891b2;
+      --accent-green: #10b981;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --border-color: #1f2a3f;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      height: 100vh;
+      background: radial-gradient(circle at center, #0e172a 0%, var(--bg-main) 100%);
+      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Ambient animated lines in background */
+    #live-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: -1;
+      width: 100vw;
+      height: 100vh;
+      opacity: 0.4;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 480px;
+      padding: 20px;
+    }
+
+    .logo-container {
+      position: relative;
+      margin-bottom: 25px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-pulse-ring {
+      position: absolute;
+      width: 120px;
+      height: 120px;
+      border: 2px solid var(--accent-cyan);
+      border-radius: 50%;
+      opacity: 0.15;
+      animation: pulseRing 3s cubic-bezier(0.215, 0.610, 0.355, 1) infinite;
+    }
+
+    @keyframes pulseRing {
+      0% { transform: scale(0.5); opacity: 0.5; }
+      50% { transform: scale(1.1); opacity: 0.15; }
+      100% { transform: scale(1.4); opacity: 0; }
+    }
+
+    .logo-img {
+      width: 90px;
+      height: 90px;
+      background-color: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      border-radius: 50%;
+      padding: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      filter: drop-shadow(0 0 10px rgba(6, 182, 212, 0.25));
+      animation: floatLogo 4s ease-in-out infinite alternate;
+    }
+
+    @keyframes floatLogo {
+      from { transform: translateY(0); }
+      to { transform: translateY(-8px); }
+    }
+
+    .title-area {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .app-badge {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      background: rgba(6, 182, 212, 0.1);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(6, 182, 212, 0.2);
+      padding: 4px 10px;
+      border-radius: 20px;
+      margin-bottom: 12px;
+    }
+
+    .title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.5px;
+      text-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+
+    .panel {
+      width: 100%;
+      background-color: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 30px 24px;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(10px);
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .panel:hover {
+      border-color: rgba(6, 182, 212, 0.25);
+      box-shadow: 0 20px 50px rgba(6, 182, 212, 0.08);
+    }
+
+    .welcome-text {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 24px;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px 24px;
+      background-color: var(--accent-cyan);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(6, 182, 212, 0.3);
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      background-color: var(--accent-cyan-hover);
+      box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+    }
+
+    .system-status {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 20px;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: var(--accent-green);
+      box-shadow: 0 0 6px var(--accent-green);
+      animation: statusBlink 1.5s infinite alternate;
+    }
+
+    @keyframes statusBlink {
+      from { opacity: 0.4; }
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="live-bg"></canvas>
+
+  <div class="container">
+    <div class="logo-container">
+      <div class="logo-pulse-ring"></div>
+      <img src="{{ url_for('static', filename='logo.png') }}" onerror="this.src='https://via.placeholder.com/90x90.png?text=FACE'" class="logo-img" alt="Logo" />
+    </div>
+
+    <div class="title-area">
+      <span class="app-badge">AI Core Engine</span>
+      <h1 class="title">🛡️ AI Surveillance & Attendance System</h1>
+    </div>
+
+    <div class="panel">
+      <p class="welcome-text">
+        Secure neural database connected. Real-time employee verification, drag-and-drop file enrollment, and live CCTV feed analysis are online.
+      </p>
+      <button class="btn" id="startBtn">Start Surveillance Ops</button>
+      <div class="system-status">
+        <span class="status-dot"></span>
+        <span>Secure Engine Online (v3.2)</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('live-bg');
+    const ctx = canvas.getContext('2d');
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const particles = [];
+    const maxParticles = 60;
+
+    for (let i = 0; i < maxParticles; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: Math.random() * 2 + 1,
+        vx: Math.random() * 0.4 - 0.2,
+        vy: Math.random() * 0.4 - 0.2,
+        alpha: Math.random() * 0.5 + 0.1
+      });
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw and move particles
+      for (let p of particles) {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(6, 182, 212, ${p.alpha})`;
+        ctx.fill();
+
+        p.x += p.vx;
+        p.y += p.vy;
+
+        if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+        if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+      }
+
+      // Draw fine lines connecting close particles
+      for (let i = 0; i < maxParticles; i++) {
+        for (let j = i + 1; j < maxParticles; j++) {
+          const p1 = particles[i];
+          const p2 = particles[j];
+          const dist = Math.hypot(p1.x - p2.x, p1.y - p2.y);
+
+          if (dist < 100) {
+            ctx.beginPath();
+            const opacity = (1 - dist / 100) * 0.12;
+            ctx.strokeStyle = `rgba(6, 182, 212, ${opacity})`;
+            ctx.lineWidth = 0.5;
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.stroke();
+          }
+        }
+      }
+
+      requestAnimationFrame(draw);
+    }
+
+    draw();
+
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+
+    document.getElementById('startBtn').addEventListener('click', function () {
+      // Audio synth beep before navigating
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.08);
+      } catch(e) {}
+
+      setTimeout(() => {
+        window.location.href = "/interface";
+      }, 80);
+    });
+  </script>
+</body>
+</html>

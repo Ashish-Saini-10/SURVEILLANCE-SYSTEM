@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🛡️ AI Surveillance & Attendance System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Montserrat&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Orbitron', 'Montserrat', sans-serif;
+      background: linear-gradient(180deg, #010409, #000000);
+      color: #c8d6e5;
+      overflow-x: hidden;
+    }
+
+    /* ==== START SCREEN ==== */
+    #startScreen {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(ellipse at center, #000c1f 0%, #000000 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      z-index: 10;
+      animation: fadeIn 2s ease-in-out;
+    }
+
+    .grid-overlay {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background-image: linear-gradient(rgba(0, 255, 255, 0.05) 1px, transparent 1px),
+                        linear-gradient(to right, rgba(0, 255, 255, 0.05) 1px, transparent 1px);
+      background-size: 40px 40px;
+      z-index: 0;
+    }
+
+    .scan-line {
+      position: absolute;
+      width: 100%;
+      height: 2px;
+      background: rgba(0, 255, 255, 0.2);
+      animation: scan 6s linear infinite;
+      z-index: 1;
+    }
+
+    @keyframes scan {
+      0% { top: 0; }
+      100% { top: 100%; }
+    }
+
+    .panel {
+      background: rgba(0, 255, 255, 0.04);
+      border: 2px solid #0ff;
+      border-radius: 18px;
+      padding: 2rem 3rem;
+      backdrop-filter: blur(15px);
+      box-shadow: 0 0 40px rgba(0, 255, 255, 0.2);
+      text-align: center;
+      z-index: 2;
+      animation: glow-in 1.5s ease;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .panel:hover {
+      transform: scale(1.03);
+      box-shadow: 0 0 50px rgba(0, 255, 255, 0.5);
+    }
+
+    @keyframes glow-in {
+      0% { opacity: 0; transform: scale(0.8); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    .title {
+      font-size: 2.8rem;
+      color: #0ff;
+      margin-bottom: 40px;
+      letter-spacing: 3px;
+      text-shadow: 0 0 10px #0ff;
+    }
+
+    .btn {
+      margin-top: 2rem;
+      padding: 0.8rem 2.2rem;
+      background-color: transparent;
+      border: 2px solid #0ff;
+      border-radius: 12px;
+      color: #0ff;
+      cursor: pointer;
+      font-weight: bold;
+      text-transform: uppercase;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 300%;
+      height: 300%;
+      background: rgba(0, 255, 255, 0.1);
+      transition: all 0.5s ease;
+      border-radius: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      z-index: 0;
+    }
+
+    .btn:hover::before {
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    .btn:hover {
+      background-color: rgba(0, 255, 255, 0.08);
+      box-shadow: 0 0 20px #0ff;
+    }
+
+    /* ==== MAIN UI ==== */
+    #mainUI {
+  display: none;
+  padding: 30px;
+  max-width: 1200px;
+  margin: auto;
+  animation: fadeIn 1.2s ease-in-out;
+  position: relative; /* <-- Add this */
+  z-index: 0;          /* Ensure layering */
+}
+
+#mainUI::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:
+    linear-gradient(#00ffff22 1px, transparent 1px),
+    linear-gradient(to right, #00ffff22 1px, transparent 1px);
+  background-size: 30px 30px;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.6;
+  filter: drop-shadow(0 0 2px #00ffff88) blur(0.3px);
+  backdrop-filter: blur(2px);
+}
+
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    header {
+      border-bottom: 2px solid #00ffe0;
+      margin-bottom: 30px;
+      padding-bottom: 10px;
+    }
+
+    h1 {
+      font-size: 30px;
+      color: #00f7ff;
+      text-shadow: 0 0 12px #00f7ff;
+      letter-spacing: 2px;
+    }
+
+    .status-bar {
+      font-size: 14px;
+      color: #7efcff;
+      margin-top: 5px;
+    }
+
+    .main {
+      display: flex;
+      gap: 25px;
+      margin-top: 25px;
+      flex-wrap: wrap;
+    }
+
+    .camera-feed, .target-info {
+      flex: 1 1 48%;
+      background: rgba(10, 15, 25, 0.95);
+      padding: 25px;
+      border-radius: 16px;
+      border: 1px solid #00ffe0;
+      box-shadow: 0 0 30px #00ffe0, inset 0 0 20px #00292b;
+      position: relative;
+    }
+
+    .camera-placeholder {
+  width: 100%;
+  height: 320px;
+  background: #0d1117;
+  border: 2px dashed #00f7ff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #00f7ff;
+  font-size: 22px;
+  position: relative;
+  overflow: hidden; /* Prevent image from overflowing */
+}
+
+#liveFeed {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Ensures it fits without distortion or overflow */
+  border-radius: 10px;
+}
+
+
+    .radar {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 260px;
+      height: 260px;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      background: conic-gradient(rgba(0, 255, 255, 0.12) 0deg, transparent 90deg);
+      animation: spin 5s linear infinite;
+      z-index: 0;
+    }
+
+    @keyframes spin {
+      0% { transform: translate(-50%, -50%) rotate(0deg); }
+      100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    .hud-overlay svg {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0; left: 0;
+      pointer-events: none;
+    }
+
+    .scanner {
+      margin-top: 20px;
+      height: 30px;
+      background: #0a0f13;
+      border: 2px solid #00ffe0;
+      border-radius: 6px;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .scan-bar {
+      position: absolute;
+      height: 100%;
+      width: 18%;
+      background: linear-gradient(90deg, #00ffe0, #001010);
+      animation: move-scan 2s infinite;
+      opacity: 0.6;
+    }
+
+    @keyframes move-scan {
+      0% { left: -20%; }
+      100% { left: 100%; }
+    }
+
+    .searching-text {
+      z-index: 2;
+      color: #00f7ff;
+      font-weight: bold;
+      font-size: 14px;
+      animation: flicker 1s infinite;
+    }
+
+    @keyframes flicker {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .face-img {
+      width: 110px;
+      border-radius: 8px;
+      border: 2px solid #00ffe0;
+      margin-bottom: 12px;
+    }
+
+    .info-grid p {
+      margin: 6px 0;
+      font-size: 16px;
+    }
+
+    .threat {
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-weight: bold;
+    }
+
+    .threat.high {
+      background-color: #ff2e63;
+      color: #fff;
+      animation: pulse 1.5s infinite;
+      box-shadow: 0 0 8px #ff2e63;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 5px #ff2e63; }
+      50% { box-shadow: 0 0 15px #ff2e63; }
+      100% { box-shadow: 0 0 5px #ff2e63; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- START SCREEN -->
+  <div id="startScreen">
+    <div class="grid-overlay"></div>
+    <div class="scan-line"></div>
+    <div class="title">🛡️ AI SURVEILLANCE & ATTENDANCE SYSTEM</div>
+    <div class="panel">
+      <p>Agent: <strong>ALPHA-9</strong></p>
+      <p>Mission Code: <strong>Special OPS</strong></p>
+      <p>Face Recognition Modules Active.</p>
+      <button class="btn" onclick="startScan()">START</button>
+    </div>
+  </div>
+
+  <!-- MAIN UI -->
+  <div id="mainUI">
+    <header>
+      <h1>🛡️ AI SURVEILLANCE & ATTENDANCE SYSTEM</h1>
+      <p class="status-bar">System Online • Camera #01 • <span id="time"></span></p>
+    </header>
+
+    <div class="main">
+      <div class="camera-feed">
+        <div class="camera-placeholder">
+          
+          <div class="hud-overlay">
+            <svg viewBox="0 0 300 300">
+              <circle cx="150" cy="150" r="100" stroke="#00f7ff" stroke-width="1" fill="none" stroke-dasharray="4 4"/>
+              <line x1="0" y1="150" x2="300" y2="150" stroke="#00f7ff" stroke-width="0.5" stroke-dasharray="2 2"/>
+              <line x1="150" y1="0" x2="150" y2="300" stroke="#00f7ff" stroke-width="0.5" stroke-dasharray="2 2"/>
+            </svg>
+          </div>
+           <img id="liveFeed" src="/video_feed" width="100%" style="border-radius:10px;" />
+        </div>
+        <div class="scanner">
+          <div class="scan-bar"></div>
+          <p class="searching-text">🔍 SCANNING FOR FACE...</p>
+        </div>
+      </div>
+
+      <div class="target-info">
+        <h2 style="color:#00f7ff; text-shadow: 0 0 6px #00f7ff;">🎯 TARGET IDENTIFIED</h2>
+        <img id="targetFace" src="https://via.placeholder.com/100x100.png?text=Face" class="face-img">
+
+        <div class="info-grid">
+          <p><strong>Name:</strong> <span id="targetName">Unknown</span></p>
+          <p><strong>Age:</strong> 21</p>
+          <p><strong>Location:</strong> AMERICA</p>
+          <p><strong>Status:</strong> ⚠️ Wanted</p>
+          <p><strong>Threat Level:</strong> <span class="threat high">HIGH</span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function startScan() {
+      document.getElementById("startScreen").style.display = "none";
+      document.getElementById("mainUI").style.display = "block";
+    }
+
+    setInterval(() => {
+      const now = new Date();
+      document.getElementById('time').innerText = now.toLocaleString();
+    }, 1000);
+  </script>
+<script>
+setInterval(() => {
+  fetch('/target_info')
+    .then(res => res.json())
+    .then(data => {
+      if (data.name && data.name !== "Unknown") {
+        document.getElementById("targetName").innerText = data.name;
+        document.getElementById("targetFace").src = data.image;
+      }
+    });
+}, 2000);
+</script>
+</body>
+</html>

@@ -1,0 +1,2390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🛡️ AI Surveillance & Attendance System</title>
+  
+  <!-- Modern Professional Font -->
+  <!-- Modern Premium Typography -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-main: #090d16;
+      --bg-panel: #101625;
+      --bg-panel-light: #1b2336;
+      --accent-cyan: #06b6d4;
+      --accent-cyan-hover: #0891b2;
+      --accent-green: #10b981;
+      --accent-green-light: rgba(16, 185, 129, 0.12);
+      --accent-red: #f43f5e;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --border-color: #1f2a3f;
+      --border-glow: rgba(6, 182, 212, 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Floating sliding toast notification */
+    .toast-container {
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    }
+
+    .toast-alert {
+      background: var(--bg-panel);
+      border: 1px solid var(--accent-green);
+      box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.25);
+      border-radius: 8px;
+      padding: 14px 20px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transform: translateX(120%);
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: auto;
+      min-width: 320px;
+      max-width: 400px;
+    }
+
+    .toast-alert.show {
+      transform: translateX(0);
+    }
+
+    .toast-alert.warning {
+      border-color: var(--accent-red);
+      box-shadow: 0 10px 25px -5px rgba(244, 63, 94, 0.25);
+    }
+
+    .toast-icon {
+      font-size: 1.5rem;
+    }
+
+    .toast-details {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .toast-title {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--accent-green);
+    }
+
+    .toast-alert.warning .toast-title {
+      color: var(--accent-red);
+    }
+
+    .toast-message {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* Top Premium Header */
+    header {
+      background-color: var(--bg-panel);
+      height: 65px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 25px;
+      flex-shrink: 0;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+    }
+
+    .logo-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-img {
+      width: 32px;
+      height: 32px;
+    }
+
+    .app-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      color: #fff;
+    }
+
+    .header-status {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .clock {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.95rem;
+      background: var(--bg-panel-light);
+      border: 1px solid var(--border-color);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--text-main);
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--accent-green);
+      box-shadow: 0 0 8px var(--accent-green);
+    }
+
+    /* Welcome Banner & Quick Guide */
+    .quick-guide {
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+      border: 1px solid rgba(6, 182, 212, 0.18);
+      border-radius: 12px;
+      margin: 20px 20px 0 20px;
+      padding: 16px 20px;
+      position: relative;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes slideDown {
+      from { transform: translateY(-20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .quick-guide-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .quick-guide-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .quick-guide-sparkle {
+      animation: pulseSparkle 1.5s infinite alternate;
+    }
+
+    @keyframes pulseSparkle {
+      from { transform: scale(1); filter: drop-shadow(0 0 2px rgba(255,255,255,0.5)); }
+      to { transform: scale(1.15); filter: drop-shadow(0 0 6px rgba(6,182,212,0.6)); }
+    }
+
+    .quick-guide-steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .quick-guide-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .quick-guide-number {
+      background: var(--accent-cyan);
+      color: #0b0f19;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: 0.75rem;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 0 8px rgba(6, 182, 212, 0.3);
+    }
+
+    .quick-guide-step-text {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .quick-guide-step-text strong {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .quick-guide-step-text span {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .quick-guide-step-text code {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--accent-cyan);
+      background: rgba(6, 182, 212, 0.08);
+      padding: 1px 4px;
+      border-radius: 3px;
+      font-size: 0.7rem;
+    }
+
+    .quick-guide-close-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.4rem;
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.2s;
+    }
+
+    .quick-guide-close-btn:hover {
+      color: #fff;
+    }
+
+    /* Core Layout Workspace */
+        .dashboard {
+      flex: 1;
+      height: 0;
+      min-height: 0;
+      display: grid;
+      /* Responsive columns: left sidebar min 260px, main area flexible, right sidebar min 260px */
+      grid-template-columns: minmax(260px, 2fr) 1fr minmax(260px, 1fr);
+      gap: 20px;
+      padding: 20px;
+      overflow: hidden;
+    }
+
+    @media (max-width: 1400px) {
+      .dashboard {
+        /* Switch to two columns: left sidebar and main+right combined */
+        grid-template-columns: minmax(260px, 1fr) 1fr;
+        height: auto;
+        overflow-y: auto;
+      }
+      .right-column {
+        grid-column: span 2;
+      }
+    }
+
+    @media (max-width: 1000px) {
+      .dashboard {
+        /* Stack all columns vertically on narrow screens */
+        grid-template-columns: 1fr;
+      }
+      .left-column, .center-column, .right-column {
+        grid-column: span 1;
+      }
+    }
+
+    /* Tactical Stats Bar Widget Grid */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin: 20px 20px 0 20px;
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 1200px) {
+      .stats-bar {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    @media (max-width: 600px) {
+      .stats-bar {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .stat-widget {
+      background: rgba(16, 22, 37, 0.45);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+      backdrop-filter: blur(10px);
+    }
+
+    .stat-widget:hover {
+      border-color: rgba(6, 182, 212, 0.3);
+      background: rgba(16, 22, 37, 0.65);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(6, 182, 212, 0.08);
+    }
+
+    .stat-widget-icon {
+      font-size: 1.4rem;
+      background: var(--bg-panel-light);
+      border: 1px solid var(--border-color);
+      width: 42px;
+      height: 42px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: var(--accent-cyan);
+      box-shadow: inset 0 0 8px rgba(255, 255, 255, 0.02);
+    }
+
+    .stat-widget-details {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .stat-widget-label {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .stat-widget-value {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    /* Interactive HUD Brackets Overlay */
+    .hud-bracket {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border-color: rgba(6, 182, 212, 0.5);
+      border-style: solid;
+      pointer-events: none;
+      z-index: 2;
+      transition: all 0.3s ease;
+    }
+    .hud-bracket.top-left {
+      top: 15px;
+      left: 15px;
+      border-width: 2.5px 0 0 2.5px;
+      border-top-left-radius: 4px;
+    }
+    .hud-bracket.top-right {
+      top: 15px;
+      right: 15px;
+      border-width: 2.5px 2.5px 0 0;
+      border-top-right-radius: 4px;
+    }
+    .hud-bracket.bottom-left {
+      bottom: 15px;
+      left: 15px;
+      border-width: 0 0 2.5px 2.5px;
+      border-bottom-left-radius: 4px;
+    }
+    .hud-bracket.bottom-right {
+      bottom: 15px;
+      right: 15px;
+      border-width: 0 2.5px 2.5px 0;
+      border-bottom-right-radius: 4px;
+    }
+
+    @keyframes pulseSentinel {
+      from { text-shadow: 0 0 2px rgba(16, 185, 129, 0.4); opacity: 0.9; }
+      to { text-shadow: 0 0 10px rgba(16, 185, 129, 0.85); opacity: 1; }
+    }
+    @keyframes pulseSentinelRed {
+      from { text-shadow: 0 0 2px rgba(244, 63, 94, 0.4); }
+      to { text-shadow: 0 0 12px rgba(244, 63, 94, 0.9); }
+    }
+    @keyframes pulseSentinelCyan {
+      from { text-shadow: 0 0 2px rgba(6, 182, 212, 0.4); }
+      to { text-shadow: 0 0 10px rgba(6, 182, 212, 0.85); }
+    }
+
+    .column {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    /* Friendly Card Panels */
+    .card {
+      background-color: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: border-color 0.25s, box-shadow 0.25s;
+    }
+
+    .card-header {
+      padding: 14px 18px;
+      background-color: var(--bg-panel-light);
+      border-bottom: 1px solid var(--border-color);
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #fff;
+    }
+
+    .card-body {
+      padding: 16px;
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* Left Sidebar: Employee Enrollment */
+    .enroll-section {
+      flex: 0 0 auto;
+    }
+
+    /* Big friendly Dropzone area */
+    .dropzone {
+      border: 2px dashed var(--border-color);
+      background-color: rgba(27, 35, 54, 0.2);
+      border-radius: 8px;
+      padding: 22px 15px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s ease-in-out;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .dropzone:hover, .dropzone.dragover {
+      border-color: var(--accent-cyan);
+      background-color: rgba(6, 182, 212, 0.05);
+      box-shadow: inset 0 0 15px rgba(6, 182, 212, 0.03);
+    }
+
+    .dropzone-icon {
+      font-size: 2rem;
+      color: var(--accent-cyan);
+      transition: transform 0.2s;
+    }
+
+    .dropzone:hover .dropzone-icon {
+      transform: translateY(-2px);
+    }
+
+    .dropzone-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .dropzone-subtitle {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    /* Queue of dropped files */
+    .queue-panel {
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background-color: rgba(16, 22, 37, 0.4);
+      max-height: 200px;
+      overflow-y: auto;
+      display: none;
+      margin-top: 5px;
+    }
+
+    .queue-header {
+      padding: 8px 12px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      background-color: var(--bg-panel-light);
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      letter-spacing: 0.5px;
+    }
+
+    .queue-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-bottom: 1px solid rgba(31, 42, 63, 0.5);
+      font-size: 0.75rem;
+    }
+
+    .queue-item:last-child {
+      border-bottom: none;
+    }
+
+    .queue-item-thumb {
+      width: 32px;
+      height: 32px;
+      border-radius: 4px;
+      object-fit: cover;
+      border: 1px solid var(--border-color);
+    }
+
+    .queue-item-details {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .queue-item-input {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--border-color);
+      color: #fff;
+      font-size: 0.8rem;
+      font-family: inherit;
+      padding: 1px 0;
+      outline: none;
+      width: 100%;
+    }
+
+    .queue-item-input:focus {
+      border-bottom-color: var(--accent-cyan);
+    }
+
+    .queue-progress {
+      width: 100%;
+      height: 3px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .queue-progress-bar {
+      height: 100%;
+      width: 0%;
+      background-color: var(--accent-cyan);
+      transition: width 0.1s linear;
+    }
+
+    .queue-item-meta {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 2px;
+      min-width: 80px;
+    }
+
+    .badge {
+      font-size: 0.6rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .badge.ready {
+      background-color: rgba(6, 182, 212, 0.1);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(6, 182, 212, 0.2);
+    }
+
+    .badge.encoding {
+      background-color: rgba(245, 158, 11, 0.1);
+      color: #f59e0b;
+      border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+
+    .badge.success {
+      background-color: rgba(16, 185, 129, 0.1);
+      color: var(--accent-green);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .badge.failed {
+      background-color: rgba(244, 63, 94, 0.1);
+      color: var(--accent-red);
+      border: 1px solid rgba(244, 63, 94, 0.2);
+    }
+
+    .item-time {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--text-muted);
+    }
+
+    /* Enrolled database list */
+    .db-section {
+      flex: 1;
+      min-height: 200px;
+    }
+
+    .search-box {
+      width: 100%;
+      background-color: var(--bg-panel-light);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: #fff;
+      outline: none;
+      font-size: 0.82rem;
+      transition: border-color 0.2s;
+    }
+
+    .search-box:focus {
+      border-color: var(--accent-cyan);
+    }
+
+    .enrolled-list {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .enrolled-card {
+      background-color: rgba(27, 35, 54, 0.15);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 8px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .enrolled-card-name {
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: #fff;
+    }
+
+    .enrolled-card-count {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      background-color: var(--bg-panel-light);
+      border: 1px solid var(--border-color);
+      padding: 2px 8px;
+      border-radius: 10px;
+      color: var(--accent-cyan);
+    }
+
+    /* Center Section: Surveillance Stream Hub */
+    .surveillance-hub {
+      flex: 1;
+    }
+
+    /* Clear CCTV camera video feed player screen */
+    .video-viewscreen {
+      width: 100%;
+      max-width: 560px;
+      aspect-ratio: 16 / 9;
+      margin: 0 auto;
+      background-color: #05070c;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8), 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    #hudCanvas {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .feed-tag {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      background: rgba(16, 22, 37, 0.85);
+      border: 1px solid var(--border-color);
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      backdrop-filter: blur(4px);
+    }
+
+    .feed-tag-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--accent-red);
+      box-shadow: 0 0 6px var(--accent-red);
+      animation: blink 1.2s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* Video Scan sweep effect */
+    .sweep-line {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 2px;
+      background: linear-gradient(to right, transparent, rgba(6, 182, 212, 0.3), transparent);
+      pointer-events: none;
+      animation: sweep 6s linear infinite;
+    }
+
+    @keyframes sweep {
+      0% { top: 0; }
+      100% { top: 100%; }
+    }
+
+    /* Control options & Permanently visible IP Connecting Bar */
+    .control-box {
+      background-color: var(--bg-panel-light);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Large beautiful tabs for source selection */
+    .source-cards-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .source-card {
+      background: rgba(16, 22, 37, 0.4);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .source-card:hover {
+      border-color: rgba(6, 182, 212, 0.35);
+      background: rgba(16, 22, 37, 0.6);
+      transform: translateY(-1px);
+    }
+
+    .source-card.active {
+      background: rgba(6, 182, 212, 0.08);
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 12px rgba(6, 182, 212, 0.1);
+    }
+
+    .source-card-icon {
+      font-size: 1.4rem;
+      background: var(--bg-panel-light);
+      padding: 6px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+    }
+
+    .source-card.active .source-card-icon {
+      border-color: rgba(6, 182, 212, 0.3);
+      color: var(--accent-cyan);
+    }
+
+    .source-card-details {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .source-card-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .source-card-subtitle {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      line-height: 1.3;
+    }
+
+    /* Permanently Active Connection Field */
+    .connection-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      border-top: 1px solid rgba(31, 42, 63, 0.5);
+      padding-top: 12px;
+    }
+
+    .ip-input-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .ip-input {
+      width: 100%;
+      background-color: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 10px 14px;
+      color: #fff;
+      font-family: 'JetBrains Mono', monospace;
+      outline: none;
+      font-size: 0.85rem;
+      transition: border-color 0.25s, box-shadow 0.25s;
+    }
+
+    .ip-input:focus {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 10px rgba(6, 182, 212, 0.15);
+    }
+
+    .ip-hint {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      padding-left: 2px;
+      line-height: 1.3;
+    }
+
+    .action-btn {
+      background-color: var(--accent-cyan);
+      border: none;
+      color: #fff;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 0.8rem;
+      padding: 11px 22px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.2s, box-shadow 0.2s;
+      white-space: nowrap;
+    }
+
+    .action-btn:hover {
+      background-color: var(--accent-cyan-hover);
+      box-shadow: 0 0 12px rgba(6, 182, 212, 0.3);
+    }
+
+    /* Console logs box */
+    .console-card {
+      flex: 0 0 100px;
+    }
+
+    .console-text {
+      flex: 1;
+      background-color: #05070c;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: #06b6d4;
+      overflow-y: auto;
+      line-height: 1.4;
+    }
+
+    /* Right Sidebar: Identified Profile & Excel table */
+    .profile-card {
+      flex: 0 0 auto;
+    }
+
+    /* Standby state animation */
+    .scan-standby-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 0;
+      text-align: center;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .radar-container {
+      position: relative;
+      width: 70px;
+      height: 70px;
+      margin-bottom: 12px;
+    }
+
+    .radar-circle {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      border: 2px dashed rgba(6, 182, 212, 0.15);
+      border-radius: 50%;
+      animation: rotateRadar 15s linear infinite;
+    }
+
+    .radar-sweep {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      border-radius: 50%;
+      background: conic-gradient(rgba(6, 182, 212, 0.12) 0deg, transparent 120deg);
+      animation: rotateRadar 3s linear infinite;
+    }
+
+    .radar-ping {
+      position: absolute;
+      top: 25px; left: 25px; width: 20px; height: 20px;
+      background: rgba(6, 182, 212, 0.15);
+      border-radius: 50%;
+      animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+    }
+
+    @keyframes rotateRadar {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes ping {
+      0% { transform: scale(0.5); opacity: 1; }
+      100% { transform: scale(2.5); opacity: 0; }
+    }
+
+    .scan-standby-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+      letter-spacing: 0.3px;
+    }
+
+    .scan-standby-subtitle {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+      max-width: 250px;
+    }
+
+    .profile-container {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      animation: fadeIn 0.35s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.97); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .profile-avatar-box {
+      width: 80px;
+      height: 80px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background-color: rgba(27, 35, 54, 0.4);
+      overflow: hidden;
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    .profile-avatar {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .profile-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .profile-row {
+      display: flex;
+      font-size: 0.78rem;
+      border-bottom: 1px dashed rgba(31, 42, 63, 0.4);
+      padding-bottom: 4px;
+    }
+
+    .profile-row strong {
+      width: 100px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .profile-row span {
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .attendance-badge-present {
+      font-size: 0.65rem;
+      font-weight: 800;
+      background-color: rgba(16, 185, 129, 0.12);
+      color: var(--accent-green);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      padding: 3px 8px;
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.08);
+      letter-spacing: 0.3px;
+    }
+
+    /* Clean marked attendance lists */
+    .attendance-card {
+      flex: 1;
+      min-height: 250px;
+    }
+
+    .table-container {
+      flex: 1;
+      overflow-y: auto;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background-color: rgba(16, 22, 37, 0.2);
+    }
+
+    .attendance-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.75rem;
+      text-align: left;
+    }
+
+    .attendance-table th {
+      background-color: var(--bg-panel-light);
+      border-bottom: 1px solid var(--border-color);
+      padding: 8px 12px;
+      color: var(--text-muted);
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    .attendance-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid rgba(31, 42, 63, 0.3);
+      color: #fff;
+    }
+
+    .attendance-table tr:hover {
+      background-color: rgba(255, 255, 255, 0.015);
+    }
+
+    .table-badge {
+      color: var(--accent-green);
+      font-weight: 700;
+    }
+
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 2px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Floating Toast alerts notifications -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Hidden Web Video Camera Grabber -->
+  <video id="hiddenVideo" autoplay playsinline muted style="display: none;"></video>
+
+  <!-- Top bar header -->
+  <header>
+    <div class="logo-section">
+      <img src="/static/logo.png" onerror="this.src='https://via.placeholder.com/32x32.png?text=FACE'" class="logo-img" alt="Logo" />
+      <div class="app-title">🛡️ AI Surveillance & Attendance System</div>
+    </div>
+    <div class="header-status">
+      <div style="font-size: 0.75rem; display: flex; align-items: center; gap: 8px; color: var(--text-muted);">
+        <span class="status-dot"></span> System Live
+      </div>
+      <div class="clock" id="clock">00:00:00</div>
+    </div>
+  </header>
+
+  <!-- Quick Start Guide Welcome Banner -->
+  <div class="quick-guide" id="quickGuide">
+    <div class="quick-guide-content">
+      <div class="quick-guide-title">
+        <span class="quick-guide-sparkle">✨</span>
+        <span>Quick Start Operator Guide</span>
+      </div>
+      <div class="quick-guide-steps">
+        <div class="quick-guide-step">
+          <div class="quick-guide-number">1</div>
+          <div class="quick-guide-step-text">
+            <strong>Enroll Personnel</strong>
+            <span>Drag & drop employee photos or a mapping CSV in the left panel to instantly encode faces.</span>
+          </div>
+        </div>
+        <div class="quick-guide-step">
+          <div class="quick-guide-number">2</div>
+          <div class="quick-guide-step-text">
+            <strong>Connect Surveillance</strong>
+            <span>Type your IP stream link directly in the connection bar below or test with your local webcam.</span>
+          </div>
+        </div>
+        <div class="quick-guide-step">
+          <div class="quick-guide-number">3</div>
+          <div class="quick-guide-step-text">
+            <strong>Automated Auditing</strong>
+            <span>Identified faces will trigger real-time attendance logs synced to the excel sheet in real-time.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button class="quick-guide-close-btn" onclick="dismissQuickGuide()" title="Dismiss Guide">&times;</button>
+  </div>
+
+  <!-- Tactical Stats Bar Widget Grid -->
+  <div class="stats-bar">
+    <div class="stat-widget">
+      <div class="stat-widget-icon">👥</div>
+      <div class="stat-widget-details">
+        <span class="stat-widget-label">Enrolled Database</span>
+        <span class="stat-widget-value" id="widgetTotalEnrolled">0 Loaded</span>
+      </div>
+    </div>
+    <div class="stat-widget">
+      <div class="stat-widget-icon">📝</div>
+      <div class="stat-widget-details">
+        <span class="stat-widget-label">Attendance Today</span>
+        <span class="stat-widget-value" id="widgetTotalAttendance">0 Marked</span>
+      </div>
+    </div>
+    <div class="stat-widget">
+      <div class="stat-widget-icon">🌐</div>
+      <div class="stat-widget-details">
+        <span class="stat-widget-label">Surveillance Source</span>
+        <span class="stat-widget-value" id="widgetActiveSource" style="color: var(--accent-cyan);">Webcam Live</span>
+      </div>
+    </div>
+    <div class="stat-widget">
+      <div class="stat-widget-icon">🛡️</div>
+      <div class="stat-widget-details">
+        <span class="stat-widget-label">System Security</span>
+        <span class="stat-widget-value" id="widgetSecuritySentinel" style="color: var(--accent-green); animation: pulseSentinel 2s infinite alternate;">SECURE</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Core Dashboard Workspace -->
+  <div class="dashboard">
+
+    <!-- Column 1: Left Column Sidebar (Employees Enrollment) -->
+    <div class="column left-column">
+      
+      <!-- Box 1: Enroll Employee -->
+      <div class="card enroll-section">
+        <div class="card-header">
+          <span>📝 Enroll New Employee</span>
+          <span style="font-size: 0.65rem; color: var(--accent-cyan);">Real-time Registry</span>
+        </div>
+        <div class="card-body">
+          <!-- Dropzone -->
+          <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()">
+            <input type="file" id="fileInput" multiple accept="image/*,.csv" style="display:none;" onchange="handleFileSelection(this.files)" />
+            <div class="dropzone-icon">📁</div>
+            <div class="dropzone-title">Drag & Drop Photos or CSV Here</div>
+            <div class="dropzone-subtitle">Or click to browse files.<br>Supported: PNG, JPG, or employee mapping CSV sheets</div>
+          </div>
+
+          <!-- Pending queue list -->
+          <div class="queue-panel" id="queueContainer">
+            <div class="queue-header">
+              <span>PENDING NEURAL ENCODINGS</span>
+              <span id="queueCountText">0 FILES</span>
+            </div>
+            <div class="queue-list" id="queueList">
+              <!-- Queue items rendered dynamically -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Box 2: Enrolled Database List -->
+      <div class="card db-section">
+        <div class="card-header">
+          <span>👥 Enrolled Employees</span>
+          <span id="registeredCount" style="font-size: 0.7rem; font-family: 'JetBrains Mono', monospace;">0 Loaded</span>
+        </div>
+        <div class="card-body">
+          <input type="text" class="search-box" id="dbSearch" placeholder="Search employee..." onkeyup="filterPersonnel()" />
+          <div class="enrolled-list" id="personnelList">
+            <div style="text-align: center; font-size: 0.75rem; color: var(--text-muted); margin-top: 15px;">Loading databases...</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Column 2: Center Main CCTV Hub -->
+    <div class="column center-column">
+      
+      <!-- Card: Video Screen Viewer -->
+      <div class="card surveillance-hub">
+        <div class="card-header">
+          <span>🎥 CCTV Surveillance Feed</span>
+          <span style="font-size: 0.7rem; color: var(--text-muted);" id="feedStatusLabel">SEARCHING LIVE...</span>
+        </div>
+        <div class="card-body" style="padding: 12px; display: flex; flex-direction: column;">
+          
+          <!-- Large Video Player -->
+          <div class="video-viewscreen">
+            <!-- HUD Bracket Lines Overlay -->
+            <div class="hud-bracket top-left"></div>
+            <div class="hud-bracket top-right"></div>
+            <div class="hud-bracket bottom-left"></div>
+            <div class="hud-bracket bottom-right"></div>
+
+            <div class="feed-tag">
+              <span class="feed-tag-dot"></span>
+              <span id="feedModeLabel">Webcam Feed</span>
+            </div>
+            <div class="sweep-line"></div>
+            <canvas id="hudCanvas"></canvas>
+          </div>
+
+          <!-- Permanently Visible Controls & Connection Inputs -->
+          <div class="control-box" style="margin-top: 12px;">
+            <div class="source-cards-container">
+              <!-- Webcam Card -->
+              <div class="source-card active" id="webcamToggle" onclick="setSourceMode('webcam')">
+                <span class="source-card-icon">📸</span>
+                <div class="source-card-details">
+                  <span class="source-card-title">Local Webcam</span>
+                  <span class="source-card-subtitle">Use default system camera for local testing</span>
+                </div>
+              </div>
+              <!-- CCTV IP Camera Card -->
+              <div class="source-card" id="ipcamToggle" onclick="setSourceMode('ipcam')">
+                <span class="source-card-icon">🌐</span>
+                <div class="source-card-details">
+                  <span class="source-card-title">CCTV IP Camera</span>
+                  <span class="source-card-subtitle">Connect remote IP stream or network feed</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Always Visible Connection input bar -->
+            <div class="connection-row" id="ipConfigArea" style="transition: all 0.25s ease;">
+              <div class="ip-input-wrapper">
+                <input type="text" class="ip-input" id="ipAddressInput" placeholder="Enter IP address or stream URL (e.g. 192.168.1.50:8080)" onfocus="autoSelectIpCam()" onkeydown="if(event.key==='Enter') connectToIpAddress()" />
+                <span class="ip-hint" id="ipHintText">Local webcam source active. Type address here to auto-switch to CCTV.</span>
+              </div>
+              <button class="action-btn" id="connectBtn" onclick="connectToIpAddress()">Connect Feed</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Card: Console Output -->
+      <div class="card console-card">
+        <div class="card-body" style="padding: 10px;">
+          <div class="console-text" id="terminalLog">
+            <div>>> SYSTEM BOOT: Success. Dashboard terminal connected.</div>
+            <div>>> Ready for operation.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Column 3: Right Sidebar (Attendance and Profile) -->
+    <div class="column right-column">
+      
+      <!-- Box 1: Identified Target Details -->
+      <div class="card profile-card" id="matchProfileCard" style="transition: all 0.3s ease;">
+        <div class="card-header">
+          <span>🎯 Live Surveillance Spotlight</span>
+          <span style="font-size:0.7rem; color: var(--accent-cyan);" id="matchStatusLabel">SCANNING...</span>
+        </div>
+        <div class="card-body" id="profileCardBody">
+          <!-- Standby Radar Screen -->
+          <div class="scan-standby-state" id="scanStandbyState">
+            <div class="radar-container">
+              <div class="radar-circle"></div>
+              <div class="radar-sweep"></div>
+              <div class="radar-ping"></div>
+            </div>
+            <div class="scan-standby-title">Active AI Eye Scanning</div>
+            <div class="scan-standby-subtitle">Waiting for employee faces to appear in the active video surveillance feed...</div>
+          </div>
+
+          <!-- Active Profile (Hidden initially) -->
+          <div class="profile-container" id="activeProfileContainer" style="display: none;">
+            <div class="profile-avatar-box" id="avatarBox" style="border: 2px solid var(--accent-green);">
+              <img id="targetFace" src="/static/logo.png" onerror="this.src='https://via.placeholder.com/80x80.png?text=FACE'" class="profile-avatar" alt="Face" />
+            </div>
+            <div class="profile-info">
+              <div class="profile-row">
+                <strong>Employee:</strong>
+                <span id="targetName" style="color: var(--accent-green); font-weight: 700;">No face detected</span>
+              </div>
+              <div class="profile-row">
+                <strong>Est. Age:</strong>
+                <span id="targetAge">--</span>
+              </div>
+              <div class="profile-row">
+                <strong>Work Unit:</strong>
+                <span id="targetLocation">--</span>
+              </div>
+              <div class="profile-row" style="border-bottom: none;">
+                <strong>Status:</strong>
+                <span id="targetThreat" class="attendance-badge-present">✓ FOUND & MARKED</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Box 2: Excel Logs Spreadsheet table -->
+      <div class="card attendance-card">
+        <div class="card-header">
+          <span>📋 Marked Attendance Log</span>
+          <span style="font-size:0.7rem; color: var(--accent-green);">Excel Sync Active</span>
+        </div>
+        <div class="card-body" style="padding: 12px; gap: 10px;">
+          <input type="text" class="search-box" id="attendanceSearch" placeholder="Filter attendance logs..." onkeyup="filterAttendanceLogs()" />
+          <div class="table-container">
+            <table class="attendance-table">
+              <thead>
+                <tr>
+                  <th>Employee</th>
+                  <th>Date</th>
+                  <th>First Seen</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="attendanceTableBody">
+                <tr>
+                  <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 25px;">No attendance logged today</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Audio synthesiser scripts -->
+  <script>
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    function playHUDSound(type) {
+      try {
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        if (type === 'lock') {
+          // Soft success sweep
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.08);
+          gain.gain.setValueAtTime(0.03, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.1);
+        } else if (type === 'alert') {
+          // Warning buzzer
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(180, audioCtx.currentTime);
+          osc.frequency.linearRampToValueAtTime(90, audioCtx.currentTime + 0.25);
+          gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.25);
+        } else if (type === 'success_marking') {
+          // Professional success chime
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(520, audioCtx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(1040, audioCtx.currentTime + 0.1);
+          gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.1);
+          
+          setTimeout(() => {
+            const osc2 = audioCtx.createOscillator();
+            const gain2 = audioCtx.createGain();
+            osc2.connect(gain2);
+            gain2.connect(audioCtx.destination);
+            osc2.type = 'sine';
+            osc2.frequency.setValueAtTime(1300, audioCtx.currentTime);
+            gain2.gain.setValueAtTime(0.04, audioCtx.currentTime);
+            gain2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
+            osc2.start();
+            osc2.stop(audioCtx.currentTime + 0.12);
+          }, 80);
+        } else if (type === 'click') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.04);
+          gain.gain.setValueAtTime(0.015, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.04);
+        }
+      } catch (e) {
+        console.warn("Sound context blocked:", e);
+      }
+    }
+  </script>
+
+  <!-- Core Surveillance Camera Capture & Tracking Canvas -->
+  <script>
+    const video = document.getElementById('hiddenVideo');
+    const hudCanvas = document.getElementById('hudCanvas');
+    const hudCtx = hudCanvas.getContext('2d');
+
+    let localStream = null;
+    let facesDetected = [];
+    let processingFrame = false;
+    let lastDetectedTarget = "";
+    
+    // Stream states
+    let currentMode = "webcam";
+    let ipCameraImage = new Image();
+    let ipCameraActive = false;
+    let ipCameraUrl = "";
+    let ipRefreshInterval = null;
+
+    hudCanvas.width = 640;
+    hudCanvas.height = 480;
+
+    // Start local camera stream
+    async function startWebcam() {
+      try {
+        stopIpCamera();
+        localStream = await navigator.mediaDevices.getUserMedia({
+          video: { width: 640, height: 480, facingMode: "user" },
+          audio: false
+        });
+        video.srcObject = localStream;
+        document.getElementById('feedStatusLabel').textContent = 'SEARCHING LIVE...';
+        document.getElementById('feedModeLabel').textContent = 'Webcam Active';
+      } catch (err) {
+        console.error("Camera access error:", err);
+        document.getElementById('feedStatusLabel').textContent = 'WEBCAM OFFLINE';
+        document.getElementById('feedModeLabel').textContent = 'Webcam Offline';
+      }
+    }
+
+    function stopWebcam() {
+      if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+        localStream = null;
+      }
+      video.srcObject = null;
+    }
+
+    // Auto-select IP Cam when focused or typing
+    function autoSelectIpCam() {
+      if (currentMode !== 'ipcam') {
+        addLogLine(">> Source Switch: Auto-switched to CCTV IP Camera mode.");
+        setSourceMode('ipcam');
+      }
+    }
+
+    // Toggle Mode between Webcam and CCTV IP camera
+    function setSourceMode(mode) {
+      playHUDSound('click');
+      currentMode = mode;
+      
+      const webcamCard = document.getElementById('webcamToggle');
+      const ipcamCard = document.getElementById('ipcamToggle');
+      const ipHintText = document.getElementById('ipHintText');
+      
+      if (mode === "webcam") {
+        webcamCard.classList.add('active');
+        ipcamCard.classList.remove('active');
+        ipHintText.textContent = 'Local webcam active. Click or type in IP input below to switch to CCTV.';
+        startWebcam();
+        document.getElementById('widgetActiveSource').textContent = 'Webcam Live';
+        document.getElementById('widgetActiveSource').style.color = 'var(--accent-cyan)';
+      } else {
+        ipcamCard.classList.add('active');
+        webcamCard.classList.remove('active');
+        ipHintText.textContent = 'Enter IP address above (e.g. 192.168.1.50:8080 or http://stream.link/video)';
+        stopWebcam();
+        document.getElementById('feedStatusLabel').textContent = 'AWAITING CONNECTION';
+        document.getElementById('feedModeLabel').textContent = 'CCTV Mode';
+        document.getElementById('widgetActiveSource').textContent = 'CCTV Linking...';
+        document.getElementById('widgetActiveSource').style.color = 'var(--text-muted)';
+      }
+    }
+
+    // Connect to CCTV IP camera
+    function connectToIpAddress() {
+      playHUDSound('click');
+      let rawIp = document.getElementById('ipAddressInput').value.trim();
+      if (!rawIp) {
+        alert("Please enter a valid IP address or Stream URL.");
+        return;
+      }
+
+      if (!rawIp.startsWith("http://") && !rawIp.startsWith("https://") && !rawIp.startsWith("rtsp://")) {
+        ipCameraUrl = "http://" + rawIp;
+      } else {
+        ipCameraUrl = rawIp;
+      }
+
+      // Default route support
+      const urlPattern = /^(https?:\/\/[^\/]+)$/;
+      if (urlPattern.test(ipCameraUrl)) {
+        ipCameraUrl += "/video";
+      }
+
+      console.log("[CCTV FEED] Connecting to:", ipCameraUrl);
+      document.getElementById('feedStatusLabel').textContent = 'CONNECTING FEED...';
+      document.getElementById('feedModeLabel').textContent = 'Linking CCTV...';
+
+      fetch('/connect_ip_cam', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: ipCameraUrl })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === "success") {
+          console.log("[CCTV FEED] Linked successfully.");
+          stopIpCamera();
+          
+          ipCameraActive = false;
+          ipCameraImage = new Image();
+          
+          ipCameraImage.onload = function() {
+            if (!ipCameraActive) {
+              ipCameraActive = true;
+              document.getElementById('feedStatusLabel').textContent = 'SEARCHING ACTIVE...';
+              document.getElementById('feedModeLabel').textContent = 'CCTV Online';
+              playHUDSound('lock');
+              addLogLine(">> CCTV Stream: Connected successfully.");
+              document.getElementById('widgetActiveSource').textContent = 'CCTV Active';
+              document.getElementById('widgetActiveSource').style.color = 'var(--accent-green)';
+            }
+          };
+
+          ipCameraImage.onerror = function() {
+            document.getElementById('feedStatusLabel').textContent = 'FEED ERROR';
+            document.getElementById('feedModeLabel').textContent = 'CCTV Error';
+            addLogLine(">> CCTV ERROR: Failed to grab stream frames.", true);
+            document.getElementById('widgetActiveSource').textContent = 'CCTV Offline';
+            document.getElementById('widgetActiveSource').style.color = 'var(--accent-red)';
+          };
+
+          ipRefreshInterval = setInterval(() => {
+            ipCameraImage.src = "/ipcam_frame?t=" + Date.now();
+          }, 60);
+        } else {
+          document.getElementById('feedStatusLabel').textContent = 'DISCONNECTED';
+          document.getElementById('feedModeLabel').textContent = 'CCTV Offline';
+          alert("Failed to connect to IP camera: " + data.message);
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        document.getElementById('feedStatusLabel').textContent = 'DISCONNECTED';
+        document.getElementById('feedModeLabel').textContent = 'CCTV Offline';
+        alert("Network error connecting to CCTV stream.");
+      });
+    }
+
+    function stopIpCamera() {
+      ipCameraActive = false;
+      if (ipRefreshInterval) {
+        clearInterval(ipRefreshInterval);
+        ipRefreshInterval = null;
+      }
+    }
+
+    // Start local webcam by default
+    startWebcam();
+
+    // Canvas drawing loop (60 FPS)
+    function drawHUD() {
+      hudCtx.clearRect(0, 0, hudCanvas.width, hudCanvas.height);
+
+      // Render Camera Stream
+      if (currentMode === "webcam" && video.readyState === video.HAVE_ENOUGH_DATA) {
+        hudCtx.save();
+        hudCtx.translate(hudCanvas.width, 0);
+        hudCtx.scale(-1, 1);
+        hudCtx.drawImage(video, 0, 0, hudCanvas.width, hudCanvas.height);
+        hudCtx.restore();
+      } else if (currentMode === "ipcam" && ipCameraActive && ipCameraImage.complete) {
+        hudCtx.drawImage(ipCameraImage, 0, 0, hudCanvas.width, hudCanvas.height);
+      } else {
+        // Grid backdrop during offline states
+        hudCtx.fillStyle = '#05070c';
+        hudCtx.fillRect(0, 0, hudCanvas.width, hudCanvas.height);
+        hudCtx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+        hudCtx.lineWidth = 1;
+        hudCtx.beginPath();
+        hudCtx.moveTo(0, 0); hudCtx.lineTo(hudCanvas.width, hudCanvas.height);
+        hudCtx.moveTo(hudCanvas.width, 0); hudCtx.lineTo(0, hudCanvas.height);
+        hudCtx.stroke();
+      }
+
+      // Drawing tracking bounding boxes for targets
+      facesDetected.forEach(face => {
+        const boxWidth = face.box.right - face.box.left;
+        const boxHeight = face.box.bottom - face.box.top;
+        
+        let x = face.box.left;
+        if (currentMode === "webcam") {
+          x = hudCanvas.width - face.box.left - boxWidth;
+        }
+        const y = face.box.top;
+
+        const isUnknown = face.name === "Unknown";
+        const color = isUnknown ? '#ef4444' : '#10b981';
+        
+        hudCtx.strokeStyle = color;
+        hudCtx.lineWidth = 2.5;
+
+        // Bounding brackets (Rounded friendly corners)
+        const bracket = Math.min(15, boxWidth * 0.2);
+        
+        // Top Left
+        hudCtx.beginPath();
+        hudCtx.moveTo(x + bracket, y); hudCtx.lineTo(x, y); hudCtx.lineTo(x, y + bracket);
+        hudCtx.stroke();
+
+        // Top Right
+        hudCtx.beginPath();
+        hudCtx.moveTo(x + boxWidth - bracket, y); hudCtx.lineTo(x + boxWidth, y); hudCtx.lineTo(x + boxWidth, y + bracket);
+        hudCtx.stroke();
+
+        // Bottom Left
+        hudCtx.beginPath();
+        hudCtx.moveTo(x, y + boxHeight - bracket); hudCtx.lineTo(x, y + boxHeight); hudCtx.lineTo(x + bracket, y + boxHeight);
+        hudCtx.stroke();
+
+        // Bottom Right
+        hudCtx.beginPath();
+        hudCtx.moveTo(x + boxWidth - bracket, y + boxHeight); hudCtx.lineTo(x + boxWidth, y + boxHeight); hudCtx.lineTo(x + boxWidth, y + boxHeight - bracket);
+        hudCtx.stroke();
+
+        // Label box
+        hudCtx.fillStyle = color;
+        hudCtx.font = "bold 11px 'Inter', sans-serif";
+        const labelText = isUnknown ? "UNKNOWN SUBJECT" : `${face.name.toUpperCase()} (MARKED)`;
+        hudCtx.fillText(labelText, x, y - 8);
+      });
+
+      requestAnimationFrame(drawHUD);
+    }
+    requestAnimationFrame(drawHUD);
+
+    // Frame Capture Compressor Pipeline
+    const hiddenCanvas = document.createElement('canvas');
+    const hiddenCtx = hiddenCanvas.getContext('2d');
+    hiddenCanvas.width = 320;
+    hiddenCanvas.height = 240;
+
+    async function sendFrameToServer() {
+      if (processingFrame) {
+        setTimeout(sendFrameToServer, 300);
+        return;
+      }
+
+      let frameReady = false;
+      hiddenCtx.clearRect(0, 0, hiddenCanvas.width, hiddenCanvas.height);
+
+      if (currentMode === "webcam" && video.readyState === video.HAVE_ENOUGH_DATA) {
+        hiddenCtx.save();
+        hiddenCtx.translate(hiddenCanvas.width, 0);
+        hiddenCtx.scale(-1, 1);
+        hiddenCtx.drawImage(video, 0, 0, hiddenCanvas.width, hiddenCanvas.height);
+        hiddenCtx.restore();
+        frameReady = true;
+      } else if (currentMode === "ipcam" && ipCameraActive && ipCameraImage.complete) {
+        hiddenCtx.drawImage(ipCameraImage, 0, 0, hiddenCanvas.width, hiddenCanvas.height);
+        frameReady = true;
+      }
+
+      if (!frameReady) {
+        setTimeout(sendFrameToServer, 300);
+        return;
+      }
+
+      processingFrame = true;
+      const base64Data = hiddenCanvas.toDataURL('image/jpeg', 0.6);
+
+      try {
+        const response = await fetch('/process_frame', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: base64Data })
+        });
+
+        const data = await response.json();
+
+        if (data.results && data.results.length > 0) {
+          facesDetected = data.results;
+          const target = facesDetected[0];
+          
+          // Switch view state to active profile
+          document.getElementById('scanStandbyState').style.display = 'none';
+          document.getElementById('activeProfileContainer').style.display = 'flex';
+          document.getElementById('matchProfileCard').style.borderColor = 'var(--accent-green)';
+          document.getElementById('matchProfileCard').style.boxShadow = '0 0 15px rgba(16, 185, 129, 0.15)';
+          
+          if (target.name !== lastDetectedTarget) {
+            lastDetectedTarget = target.name;
+            
+            if (target.name === "Unknown") {
+              playHUDSound('alert');
+              showToast("⚠️ Security Notice", "Unregistered person detected in video stream.", true);
+              addLogLine(">> Notice: Unregistered subject detected.", true);
+              document.getElementById('matchStatusLabel').textContent = "UNREGISTERED";
+              document.getElementById('matchStatusLabel').style.color = "var(--accent-red)";
+              document.getElementById('targetName').style.color = "var(--accent-red)";
+              document.getElementById('avatarBox').style.borderColor = "var(--accent-red)";
+              document.getElementById('targetThreat').className = "profile-badge HIGH";
+              document.getElementById('targetThreat').textContent = "UNREGISTERED";
+              document.getElementById('targetThreat').style.backgroundColor = "rgba(244, 63, 94, 0.12)";
+              document.getElementById('targetThreat').style.color = "var(--accent-red)";
+              document.getElementById('targetThreat').style.borderColor = "rgba(244, 63, 94, 0.25)";
+              
+              // Stats Widget Warning Pulse
+              document.getElementById('widgetSecuritySentinel').textContent = "ALERT";
+              document.getElementById('widgetSecuritySentinel').style.color = "var(--accent-red)";
+              document.getElementById('widgetSecuritySentinel').style.animation = "pulseSentinelRed 0.6s infinite alternate";
+            } else {
+              playHUDSound('success_marking');
+              showToast("✓ Attendance Marked", `${target.name} has been found and marked present.`, false);
+              addLogLine(`>> Face Match: Marked attendance for ${target.name}.`);
+              document.getElementById('matchStatusLabel').textContent = "MATCH DETECTED ✓";
+              document.getElementById('matchStatusLabel').style.color = "var(--accent-green)";
+              document.getElementById('targetName').style.color = "var(--accent-green)";
+              document.getElementById('avatarBox').style.borderColor = "var(--accent-green)";
+              document.getElementById('targetThreat').className = "attendance-badge-present";
+              document.getElementById('targetThreat').textContent = "✓ FOUND & MARKED";
+              document.getElementById('targetThreat').style.backgroundColor = "rgba(16, 185, 129, 0.12)";
+              document.getElementById('targetThreat').style.color = "var(--accent-green)";
+              document.getElementById('targetThreat').style.borderColor = "rgba(16, 185, 129, 0.25)";
+              
+              // Stats Widget Match Pulse
+              document.getElementById('widgetSecuritySentinel').textContent = "MATCHED";
+              document.getElementById('widgetSecuritySentinel').style.color = "var(--accent-cyan)";
+              document.getElementById('widgetSecuritySentinel').style.animation = "pulseSentinelCyan 1s infinite alternate";
+              fetchAttendanceLogs();
+            }
+          }
+
+          // Update Profile Box
+          document.getElementById('targetName').textContent = target.name;
+          document.getElementById('targetAge').textContent = target.age;
+          document.getElementById('targetLocation').textContent = target.location;
+          
+          if (target.image) {
+            document.getElementById('targetFace').src = target.image;
+          }
+        } else {
+          facesDetected = [];
+          lastDetectedTarget = "";
+          
+          // Switch view state back to standby
+          document.getElementById('scanStandbyState').style.display = 'flex';
+          document.getElementById('activeProfileContainer').style.display = 'none';
+          document.getElementById('matchProfileCard').style.borderColor = 'var(--border-color)';
+          document.getElementById('matchProfileCard').style.boxShadow = 'none';
+          document.getElementById('matchStatusLabel').textContent = "SCANNING...";
+          document.getElementById('matchStatusLabel').style.color = "var(--accent-cyan)";
+          
+          // Stats Widget Secure State Reset
+          document.getElementById('widgetSecuritySentinel').textContent = "SECURE";
+          document.getElementById('widgetSecuritySentinel').style.color = "var(--accent-green)";
+          document.getElementById('widgetSecuritySentinel').style.animation = "pulseSentinel 2s infinite alternate";
+        }
+      } catch (err) {
+        console.error("Core processing failed:", err);
+      } finally {
+        processingFrame = false;
+        setTimeout(sendFrameToServer, 300);
+      }
+    }
+    setTimeout(sendFrameToServer, 1000);
+  </script>
+
+  <!-- Drag-and-Drop & CSV Parser Interactive Logic -->
+  <script>
+    const dropzone = document.getElementById('dropzone');
+    const queueContainer = document.getElementById('queueContainer');
+    const queueList = document.getElementById('queueList');
+    
+    let pipelineQueue = [];
+    let isProcessingPipeline = false;
+
+    // Drags listener
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropzone.classList.add('dragover');
+      }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('dragover');
+      }, false);
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      const files = dt.files;
+      handleFileSelection(files);
+    });
+
+    // File Selection router
+    function handleFileSelection(files) {
+      if (!files || files.length === 0) return;
+      playHUDSound('click');
+      addLogLine(`>> Uploader: Received ${files.length} files.`);
+
+      let csvFile = null;
+      const imageFiles = [];
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (file.name.endsWith('.csv')) {
+          csvFile = file;
+        } else if (file.type.startsWith('image/')) {
+          imageFiles.push(file);
+        }
+      }
+
+      if (csvFile) {
+        addLogLine(`>> CSV Parser: Loading template spreadsheet file "${csvFile.name}"...`);
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          const content = event.target.result;
+          parseAndScheduleCSV(content, imageFiles);
+        };
+        reader.readAsText(csvFile);
+      } else {
+        imageFiles.forEach(file => {
+          registerImageToQueue(file);
+        });
+      }
+    }
+
+    // Image registration
+    function registerImageToQueue(file, explicitName = null) {
+      let name = explicitName;
+      if (!name) {
+        const baseName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+        name = baseName.replace(/[_-]/g, ' ')
+                       .replace(/\b\w/g, c => c.toUpperCase());
+      }
+
+      const itemId = 'q_' + Math.random().toString(36).substr(2, 9);
+      
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const base64Data = event.target.result;
+        
+        const queueItem = {
+          id: itemId,
+          file: file,
+          name: name,
+          base64: base64Data,
+          status: 'ready',
+          progress: 0,
+          elapsed: 0.0,
+          timerInterval: null
+        };
+        
+        pipelineQueue.push(queueItem);
+        renderQueueList();
+        addLogLine(`>> Queue: Added "${name}" (${file.name}) to pending pipeline.`);
+        
+        startPipelineProcessing();
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // CSV parser
+    function parseAndScheduleCSV(csvText, droppedImages) {
+      try {
+        const lines = csvText.split(/\r?\n/);
+        if (lines.length < 2) {
+          addLogLine(">> CSV Parser: Document is empty or missing columns.", true);
+          return;
+        }
+
+        const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+        const nameIdx = headers.indexOf('name');
+        const imgNameIdx = headers.indexOf('imagename');
+        const imgUrlIdx = headers.indexOf('imageurl');
+
+        if (nameIdx === -1) {
+          addLogLine(">> CSV ERROR: Missing column column header 'Name'.", true);
+          return;
+        }
+
+        let parsedCount = 0;
+        for (let i = 1; i < lines.length; i++) {
+          if (!lines[i].trim()) continue;
+          
+          const cols = lines[i].split(',').map(c => c.trim());
+          const empName = cols[nameIdx];
+          
+          if (!empName) continue;
+
+          // Case A: Image URL
+          if (imgUrlIdx !== -1 && cols[imgUrlIdx]) {
+            const url = cols[imgUrlIdx];
+            scheduleURLForEncoding(empName, url);
+            parsedCount++;
+          }
+          // Case B: Local Image filename matched
+          else if (imgNameIdx !== -1 && cols[imgNameIdx]) {
+            const targetFilename = cols[imgNameIdx].toLowerCase();
+            const matchedFile = droppedImages.find(f => f.name.toLowerCase() === targetFilename);
+            
+            if (matchedFile) {
+              registerImageToQueue(matchedFile, empName);
+              parsedCount++;
+            } else {
+              addLogLine(`>> Mismatch: Image file "${cols[imgNameIdx]}" not found for ${empName}`, true);
+            }
+          }
+          // Case C: Attempt name-match
+          else {
+            const normalizedName = empName.toLowerCase().replace(/\s+/g, '_');
+            const matchedFile = droppedImages.find(f => {
+              const fname = f.name.toLowerCase();
+              return fname.includes(normalizedName) || normalizedName.includes(fname.split('.')[0]);
+            });
+
+            if (matchedFile) {
+              registerImageToQueue(matchedFile, empName);
+              parsedCount++;
+            }
+          }
+        }
+        
+        addLogLine(`>> CSV Parser: Mapped ${parsedCount} employees successfully.`);
+      } catch (e) {
+        addLogLine(`>> CSV Error: Parsing exception.`, true);
+      }
+    }
+
+    // Schedule Remote URLs
+    function scheduleURLForEncoding(name, url) {
+      const itemId = 'q_' + Math.random().toString(36).substr(2, 9);
+      
+      const queueItem = {
+        id: itemId,
+        file: { name: 'Network Image Link' },
+        name: name,
+        image_url: url,
+        status: 'ready',
+        progress: 0,
+        elapsed: 0.0,
+        timerInterval: null
+      };
+
+      pipelineQueue.push(queueItem);
+      renderQueueList();
+      addLogLine(`>> Queue: Scheduled employee URL for "${name}".`);
+      startPipelineProcessing();
+    }
+
+    // Render pending queue list
+    function renderQueueList() {
+      if (pipelineQueue.length > 0) {
+        queueContainer.style.display = 'block';
+      } else {
+        queueContainer.style.display = 'none';
+      }
+
+      document.getElementById('queueCountText').textContent = `${pipelineQueue.length} PENDING`;
+      queueList.innerHTML = '';
+
+      pipelineQueue.forEach(item => {
+        const itemRow = document.createElement('div');
+        itemRow.className = 'queue-item';
+        itemRow.id = item.id;
+
+        const isUrl = !item.base64;
+        const imgPlaceholder = isUrl ? 'https://via.placeholder.com/32x32.png?text=URL' : item.base64;
+
+        itemRow.innerHTML = `
+          <img src="${imgPlaceholder}" class="queue-item-thumb" alt="Preview" />
+          <div class="queue-item-details">
+            <input type="text" class="queue-item-input" value="${item.name}" onchange="updateQueueItemName('${item.id}', this.value)" ${item.status !== 'ready' ? 'disabled' : ''} />
+            <div class="queue-progress">
+              <div class="queue-progress-bar" id="progress_${item.id}" style="width: ${item.progress}%"></div>
+            </div>
+          </div>
+          <div class="queue-item-meta">
+            <span class="badge ${item.status}" id="badge_${item.id}">${item.status === 'ready' ? 'ready' : item.status === 'processing' ? 'encoding' : item.status}</span>
+            <span class="item-time" id="timer_${item.id}">${item.elapsed.toFixed(1)}s</span>
+          </div>
+        `;
+        queueList.appendChild(itemRow);
+      });
+    }
+
+    function updateQueueItemName(id, val) {
+      const item = pipelineQueue.find(q => q.id === id);
+      if (item) {
+        item.name = val.trim();
+        addLogLine(`>> Queue: Renamed record target to "${item.name}"`);
+      }
+    }
+
+    // Dynamic queue compile loop
+    async function startPipelineProcessing() {
+      if (isProcessingPipeline) return;
+      
+      const nextItem = pipelineQueue.find(q => q.status === 'ready');
+      if (!nextItem) {
+        isProcessingPipeline = false;
+        return;
+      }
+
+      isProcessingPipeline = true;
+      nextItem.status = 'processing';
+      nextItem.progress = 20;
+      
+      renderQueueList();
+      addLogLine(`>> Compiler: Encoding face mapping for employee "${nextItem.name}"...`);
+
+      const startTime = Date.now();
+      const progressFill = document.getElementById(`progress_${nextItem.id}`);
+      const timerLabel = document.getElementById(`timer_${nextItem.id}`);
+      const badge = document.getElementById(`badge_${nextItem.id}`);
+
+      badge.className = "badge encoding";
+      badge.textContent = "encoding";
+
+      nextItem.timerInterval = setInterval(() => {
+        const elapsed = (Date.now() - startTime) / 1000;
+        nextItem.elapsed = elapsed;
+        timerLabel.textContent = `${elapsed.toFixed(1)}s`;
+        
+        if (nextItem.progress < 85) {
+          nextItem.progress += 3;
+          progressFill.style.width = `${nextItem.progress}%`;
+        }
+      }, 50);
+
+      // Call API
+      try {
+        const payload = {
+          name: nextItem.name
+        };
+
+        if (nextItem.base64) {
+          payload.image = nextItem.base64;
+        } else if (nextItem.image_url) {
+          payload.image_url = nextItem.image_url;
+        }
+
+        const response = await fetch('/encode_single_face', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+        clearInterval(nextItem.timerInterval);
+
+        if (data.status === 'success') {
+          nextItem.status = 'success';
+          nextItem.progress = 100;
+          progressFill.style.width = '100%';
+          progressFill.style.backgroundColor = 'var(--accent-green)';
+          
+          badge.className = "badge success";
+          badge.textContent = "success";
+          
+          playHUDSound('lock');
+          addLogLine(`>> Database: Enrolled employee "${nextItem.name}" successfully (Time: ${data.time_taken}s).`);
+          
+          // Refresh diagnostics and personnel widgets
+          fetchRegisteredPersonnel();
+        } else {
+          throw new Error(data.message || 'Face detection failed');
+        }
+      } catch (err) {
+        clearInterval(nextItem.timerInterval);
+        
+        nextItem.status = 'error';
+        progressFill.style.width = '100%';
+        progressFill.style.backgroundColor = 'var(--accent-red)';
+        
+        badge.className = "badge failed";
+        badge.textContent = "failed";
+        
+        playHUDSound('alert');
+        addLogLine(`>> Error: Failed enrolling "${nextItem.name}" - ${err.message}`, true);
+      }
+
+      // Proceed with next item
+      setTimeout(() => {
+        isProcessingPipeline = false;
+        
+        // Remove item from view after 2.5 seconds
+        setTimeout(() => {
+          pipelineQueue = pipelineQueue.filter(q => q.id !== nextItem.id);
+          renderQueueList();
+        }, 2500);
+        
+        startPipelineProcessing();
+      }, 700);
+    }
+  </script>
+
+  <!-- Live Dynamic Widget Fetching & Clock Scripts -->
+  <script>
+    // Console printer helper
+    function addLogLine(text, isError = false) {
+      const logArea = document.getElementById('terminalLog');
+      const logLine = document.createElement('div');
+      if (isError) logLine.style.color = 'var(--accent-red)';
+      
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString([], { hour12: false });
+      
+      logLine.textContent = `[${timeStr}] ${text}`;
+      logArea.appendChild(logLine);
+      logArea.scrollTop = logArea.scrollHeight;
+    }
+
+    // Professional Clock
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('clock').textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Friendly Toast Alerts
+    function showToast(title, message, isWarning = false) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = 'toast-alert';
+      if (isWarning) toast.classList.add('warning');
+
+      const icon = isWarning ? '⚠️' : '✓';
+
+      toast.innerHTML = `
+        <div class="toast-icon">${icon}</div>
+        <div class="toast-details">
+          <div class="toast-title">${title}</div>
+          <div class="toast-message">${message}</div>
+        </div>
+      `;
+
+      container.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.classList.add('show');
+      }, 30);
+
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => {
+          toast.remove();
+        }, 400);
+      }, 4000);
+    }
+
+    // Dismiss guide banner
+    function dismissQuickGuide() {
+      playHUDSound('click');
+      const guide = document.getElementById('quickGuide');
+      guide.style.transition = 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)';
+      guide.style.opacity = '0';
+      guide.style.transform = 'translateY(-20px)';
+      setTimeout(() => {
+        guide.style.display = 'none';
+      }, 350);
+    }
+
+    // Fetch enrolled subject lists
+    let enrolledListLocal = [];
+    function fetchRegisteredPersonnel() {
+      fetch('/get_registered_personnel')
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === "success") {
+            enrolledListLocal = data.personnel;
+            renderPersonnelList(data.personnel);
+            document.getElementById('registeredCount').textContent = `${data.personnel.length} Enrolled`;
+            document.getElementById('widgetTotalEnrolled').textContent = `${data.personnel.length} Subjects`;
+          }
+        })
+        .catch(err => console.error("Error loading personnel databases:", err));
+    }
+
+    function renderPersonnelList(list) {
+      const personnelList = document.getElementById('personnelList');
+      personnelList.innerHTML = '';
+
+      if (list.length === 0) {
+        personnelList.innerHTML = '<div style="text-align: center; font-size: 0.75rem; color: var(--text-muted); margin-top: 15px;">No enrolled employees found.</div>';
+        return;
+      }
+
+      list.forEach(p => {
+        const item = document.createElement('div');
+        item.className = 'enrolled-card';
+        item.innerHTML = `
+          <div class="enrolled-card-name">${p.name}</div>
+          <div class="enrolled-card-count">${p.encodings_count} Variation${p.encodings_count !== 1 ? 's' : ''}</div>
+        `;
+        personnelList.appendChild(item);
+      });
+    }
+
+    function filterPersonnel() {
+      const query = document.getElementById('dbSearch').value.toLowerCase().trim();
+      const filtered = enrolledListLocal.filter(p => p.name.toLowerCase().includes(query));
+      renderPersonnelList(filtered);
+    }
+
+    // Fetch Excel spreadsheet marked attendance
+    let attendanceRecordsLocal = [];
+    function fetchAttendanceLogs() {
+      fetch('/get_attendance_logs')
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === "success") {
+            attendanceRecordsLocal = data.records;
+            document.getElementById('widgetTotalAttendance').textContent = `${data.records.length} Present`;
+            
+            // Filter using user's active search query
+            const query = document.getElementById('attendanceSearch').value.toLowerCase().trim();
+            if (query) {
+              const filtered = attendanceRecordsLocal.filter(row => row.Name.toLowerCase().includes(query));
+              renderAttendanceLogs(filtered);
+            } else {
+              renderAttendanceLogs(data.records);
+            }
+          }
+        })
+        .catch(err => console.error("Error loading attendance tables:", err));
+    }
+
+    function renderAttendanceLogs(records) {
+      const tbody = document.getElementById('attendanceTableBody');
+      tbody.innerHTML = '';
+      
+      if (records.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 25px;">No attendance logged today</td></tr>';
+        return;
+      }
+
+      records.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${row.Name}</strong></td>
+          <td><span style="font-family: 'JetBrains Mono', monospace;">${row.Date}</span></td>
+          <td><span style="font-family: 'JetBrains Mono', monospace; color: var(--accent-cyan);">${row.FirstSeenTime || row["First Seen Time"]}</span></td>
+          <td><span class="table-badge">✓ Marked</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterAttendanceLogs() {
+      const query = document.getElementById('attendanceSearch').value.toLowerCase().trim();
+      const filtered = attendanceRecordsLocal.filter(row => row.Name.toLowerCase().includes(query));
+      renderAttendanceLogs(filtered);
+    }
+
+    // Startup initializers
+    fetchRegisteredPersonnel();
+    fetchAttendanceLogs();
+    
+    // Auto-refresh the marked attendance list every 4 seconds
+    setInterval(fetchAttendanceLogs, 4000);
+  </script>
+</body>
+</html>
